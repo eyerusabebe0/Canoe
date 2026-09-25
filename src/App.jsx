@@ -1,18 +1,157 @@
 import { useMemo, useState } from 'react'
 import './App.css'
 
-const categories = ['All dishes', 'Coffee & tea', 'Fresh drinks', 'Breakfast', 'Mains', 'Pizza & burgers', 'Salads']
-const initialMenuItems = [
-  ['Canoe Special', 'Mains', '1500', 'Our house signature, served with a generous plate of sides.'], ['Special Tibs', 'Mains', '640', 'Tender, seasoned pieces with peppers and onions.'], ['Gomen Kitifo', 'Mains', '270', 'A classic Ethiopian favorite with house-seasoned greens.'], ['Spaghetti with Meat', 'Mains', '300', 'Comforting pasta finished with our rich meat sauce.'], ['Rice with Vegetable', 'Mains', '220', 'Steamed rice with a colorful vegetable sauté.'], ['Chicken Firfir', 'Mains', '240', 'Soft injera tossed with spiced chicken and berbere.'],
-  ['Special Club Sandwich', 'Pizza & burgers', '520', 'Stacked with fresh greens, cheese and our house filling.'], ['Special Double Burger', 'Pizza & burgers', '695', 'Two juicy patties, cheese, lettuce and tomato.'], ['Chicken Burger', 'Pizza & burgers', '520', 'Crisp chicken, fresh salad and a toasted bun.'], ['Special Pizza', 'Pizza & burgers', '530', 'A generous, cheesy house favorite.'], ['Vegetable Pizza', 'Pizza & burgers', '490', 'Fresh vegetables, herbs and melted cheese.'], ['Chicken Soup', 'Mains', '370', 'Warm, deeply savory and made for slow lunches.'], ['Vegetable Soup', 'Mains', '220', 'A bright, comforting bowl of seasonal vegetables.'], ['Fish Soup', 'Mains', '320', 'Lightly spiced and full of delicate flavor.'],
-  ['Egg Sandwich', 'Breakfast', '260', 'Soft egg and fresh fillings in toasted bread.'], ['Special Egg Sandwich', 'Breakfast', '340', 'Our fuller, richer take on a morning classic.'], ['Egg Firfir', 'Breakfast', '270', 'Torn injera folded through warm seasoned egg.'], ['Pancake', 'Breakfast', '220', 'Golden, tender and made for a slow morning.'], ['Special Omelet', 'Breakfast', '290', 'A fluffy omelet with the works.'], ['Fetira', 'Breakfast', '220', 'Flaky, buttery and freshly prepared.'],
-  ['Cappuccino', 'Coffee & tea', '200', 'Velvety espresso, steamed milk and a soft crown.'], ['Macchiato', 'Coffee & tea', '40', 'A short espresso touched with silky milk.'], ['Special Tea', 'Coffee & tea', '80', 'Fragrant tea blended with a Canoe touch.'], ['Ginger Tea', 'Coffee & tea', '90', 'Bright ginger warmth, served hot.'], ['Lemon Tea', 'Coffee & tea', '55', 'A clean, citrusy cup.'],
-  ['Special Mojito', 'Fresh drinks', '185', 'A sparkling, minty cooler with fresh citrus.'], ['Strawberry Mojito', 'Fresh drinks', '160', 'Fresh strawberry, mint and a lively finish.'], ['Orange Mojito', 'Fresh drinks', '160', 'Bright orange with a cooling mint lift.'], ['Avocado Juice', 'Fresh drinks', '185', 'Creamy, cool and blended to order.'], ['Pineapple Juice', 'Fresh drinks', '220', 'Fresh tropical sweetness in every glass.'], ['Mixed Juice', 'Fresh drinks', '210', 'A colorful blend of the day’s freshest fruit.'],
-  ['Fruit Salad', 'Salads', '370', 'Freshly cut fruit, bright and naturally sweet.'], ['Mixed Salad', 'Salads', '300', 'Crisp greens and colorful garden vegetables.'], ['Avocado Salad', 'Salads', '290', 'Creamy avocado over fresh, crunchy greens.'], ['Russian Salad', 'Salads', '400', 'A generous, creamy classic.'],
-].map(([name, category, price, description]) => ({ name, category, price, description }))
+const categories = ['All dishes', 'Breakfast', 'Fasting foods', 'Non fasting foods', 'Burger', 'Noodles', 'Pizza', 'Snack', 'Fish', 'Juice', 'Salad', 'Soup', 'Cold drinks', 'Hot drinks', 'Cream cake', 'Canoe special cake', 'Canoe special torta cake', 'Torta cake', 'Cookies']
+
+const normalizeMenuItems = (items = []) => {
+  if (!Array.isArray(items)) return []
+
+  return items
+    .filter(Boolean)
+    .map((item) => {
+      if (Array.isArray(item)) {
+        const [name = '', category = 'Breakfast', price = '', description = ''] = item
+        return { name, category, price, description }
+      }
+
+      return {
+        name: item.name ?? '',
+        category: item.category ?? 'Breakfast',
+        price: item.price ?? '',
+        description: item.description ?? ''
+      }
+    })
+}
+
+const initialMenuItems = normalizeMenuItems([
+   ['እንቁላል ሳንዱች / Egg Sandwich', 'Breakfast', '260', 'Soft egg and fresh fillings in toasted bread.'],
+  ['ስፔሻል እንቁላል ሳንዱች / Special Egg Sandwich', 'Breakfast', '360', 'Our fuller, richer take on a morning classic.'],
+  ['እንቁላል ፍርፍር / Egg Firfir', 'Breakfast', '270', 'Torn injera folded through warm seasoned egg.'],
+  ['እንቁላል ስልስ / Egg Silis', 'Breakfast', '275', 'Eggs cooked in a flavorful spiced tomato sauce.'],
+  ['እንቁላል በስጋ / Egg with Meat', 'Breakfast', '345', 'Scrambled eggs cooked with seasoned minced meat.'],
+  ['ፓንኬክ / Pancake', 'Breakfast', '220', 'Golden, tender and made for a slow morning.'],
+  ['ኦምሌት / Omlet', 'Breakfast', '225', 'Classic lightly seasoned fried folded egg.'],
+  ['ስፔሻል ኦምሌት / Special Omlet', 'Breakfast', '290', 'A fluffy omelet with all the works.'],
+  ['ፈጢራ / Fetira', 'Breakfast', '220', 'Flaky, buttery pastry freshly prepared.'],
+  ['ስፔሻል ፈጢራ / Special Fetira', 'Breakfast', '330', 'Flaky pastry layered with egg and honey.'],
+  ['ጨጨብሳ / Chechebsa', 'Breakfast', '220', 'Shredded flatbread tossed in spiced butter and berbere.'],
+  ['ስፔሻል ጨጨብሳ / Special Chechebsa', 'Breakfast', '290', 'Chechebsa served with egg and honey or yogurt.'],
+  ['የጤፍ ጨጨብሳ / Teff Chechebsa', 'Breakfast', '230', 'Traditional Chechebsa made with wholesome teff bread.'],
+  ['ስፔሻል የጤፍ ጨጨብሳ / S.Teff Chechebsa', 'Breakfast', '300', 'Teff Chechebsa rich with egg, spiced butter, and honey.'],
+  ['ፉል / Ful', 'Breakfast', '200', 'Warm mashed fava beans with spices and herbs.'],
+  ['ስፔሻል ፉል / Special Ful', 'Breakfast', '260', 'Fava beans topped with chopped egg, yogurt, and fresh veggies.'],
+  ['አቮካዶ ፉል / Avocado Ful', 'Breakfast', '210', 'Warm fava beans topped with fresh creamy avocado slices.'],
+  ['ፓስታ በእንቁላል / Pasta with Egg', 'Breakfast', '300', 'Warm pasta sautéed with scrambled egg.'],
+  ['ሩዝ በእንቁላል / Rice With Egg', 'Breakfast', '300', 'Steamed rice tossed with lightly seasoned egg.'],
+  ['አትክልት በዳቦ / Vegitable With Bread', 'Breakfast', '200', 'Sautéed fresh vegetables served with warm bread.'],
+  ['ፍሬንች ቶስት / Frinch Tost', 'Breakfast', '210', 'Golden toasted bread soaked in egg batter.'],
+  ['ስፔሻል ናሽፍ / Special Nashf', 'Breakfast', '300', 'Dry-sautéed spiced meat and vegetable mix.'],
+  ['ኖርማል ናሽፍ/ Normal Nashf', 'Breakfast', '230', 'Standard portion of the day\'s breakfast.'],
+  // Non fasting foods
+  ['ስፔሻል ካኑ / Canoe Special', 'Non fasting foods', '1950', 'የቤታችን ልዩ ምግብ ከተለያዩ አጃቢ ምግቦች ጋር።'],
+  ['መንችት / Menchet', 'Non fasting foods', '400', 'በቅመም የተሰራ የተፈጨ የስጋ ወጥ።'],
+  ['የበግ ጥብስ / Sheep Tibs', 'Non fasting foods', '550', 'በቅመም እና በቃሪያ የተጠበሰ የለስላሳ የበግ ስጋ ጥብስ።'],
+  ['ስፔሻል ጥብስ / Special Tibs', 'Non fasting foods', '600', 'በቃሪያ እና ሽንኩርት አጅቦ የሚቀርብ ስፔሻል የስጋ ጥብስ።'],
+  ['ጥብስ ፍርፍር / Tibs Firfir', 'Non fasting foods', '490', 'ከየስጋ ጥብስ ጋር የተሰራ ለስላሳ ፍርፍር።'],
+  ['ስፔሻል ጥብስ ፍርፍር / Special Tibs Firfir', 'Non fasting foods', '530', 'በተጨማሪ የስጋ ጥብስ እና ግብዓቶች የበለጸገ ፍርፍር።'],
+  ['ዱሌት / Dulet', 'Non fasting foods', '390', 'በቅመም እና በንጥር ቅቤ የተሰራ ባህላዊ ዱሌት።'],
+  ['ክትፎ / Kitfo', 'Non fasting foods', '650', 'በሚጥሚጣ እና በንጥር ቅቤ የታሸ ለስላሳ የሬድ ስጋ ክትፎ።'],
+  ['ስፔሻል ክትፎ / Special Kitfo', 'Non fasting foods', '750', 'አይብ እና ጎመን አጅቦ የሚቀርብ ስፔሻል ክትፎ።'],
+  ['የስጋ ፍርፍር / Meat Firfir', 'Non fasting foods', '350', 'በቅመም ከተጠበሰ ስጋ ጋር የተሰራ ፍርፍር።'],
+  ['ስፔሻል የስጋ ፍርፍር / Special Meat Firfir', 'Non fasting foods', '390', 'በተጨማሪ ስጋ እና እንቁላል ያጌጠ ስፔሻል ፍርፍር።'],
+  ['ድርቆሽ ፍርፍር / Dirkosh Firfir', 'Non fasting foods', '310', 'ከስጋ ጥብስ ጋር የተሰራ ድርቆሽ ፍርፍር።'],
+  ['ድርቆሽ ፍርፍር በቋንጣ / Dirkosh firfir with Kwanta', 'Non fasting foods', '370', 'በደረቀ የቋንጣ ስጋ የተሰራ ድርቆሽ ፍርፍር።'],
+  ['ስፓጌቲ በስጋ / Spageti With Meat', 'Non fasting foods', '320', 'በተፈጨ የስጋ ሶስ የተሰራ ፓስታ።'],
+  ['ሩዝ በስጋ / Rice With Meat', 'Non fasting foods', '320', 'ከተጠበሰ የስጋ ክፋዮች ጋር የሚቀርብ ሩዝ።'],
+  ['ሽሮ ቦዘና / Shiro Bozena', 'Non fasting foods', '290', 'ከስጋ ክፋዮች ጋር የተቀቀለ ጣፋጭ ሽሮ።'],
+  ['ጎመን በስጋ / Gomen With Meat', 'Non fasting foods', '320', 'ከቀይ ስጋ ጋር የተጠበሰ ለስላሳ ጎመን።'],
+  ['ቋንጣ ፍርፍር / Kwanta Firfir', 'Non fasting foods', '370', 'በደረቀ እና በታሸ የቋንጣ ስጋ የተሰራ ፍርፍር።'],
+  ['ስፔሻል ቋንጣ ፍርፍር / S. Kwanta firfir', 'Non fasting foods', '450', 'በተጨማሪ እንቁላል እና ቅቤ ያጌጠ ስፔሻል ቋንጣ ፍርፍር።'],
+  ['ግርል ጥብስ / Grill Tibs', 'Non fasting foods', '550', 'በፍህም ላይ በጥንቃቄ የተጠበሰ የስጋ ጥብስ።'],
+  ['ስፓጌቲ በካርቦናራ / Spageti With Karbonara', 'Non fasting foods', '395', 'በክሬም እና በስጋ ሶስ የተሰራ ልዩ ፓስታ።']
+  // Noodles
+  ['ስፓጌቲ በስጋ / Spageti With Meat', 'Noodles', '320', 'Comforting pasta finished with our rich meat sauce.'],
+  ['ፓስታ በስልስ / Spageti With Silis', 'Noodles', '260', 'Creamy noodles topped with sauce and herbs.'],
+
+  // Burger
+  ['ስፔሻል ክለብ ሳንዱች / Special Club Sandwich', 'Burger', '620', 'Stacked with fresh greens, cheese and our house filling.'],
+  ['ስፔሻል ዳብል በርገር / Special Duble burger', 'Burger', '695', 'Two juicy patties, cheese, lettuce and tomato.'],
+  ['ቺከን በርገር / Chicken Burger', 'Burger', '520', 'Crisp chicken, fresh salad and a toasted bun.'],
+  ['ቺዝ በርገር / Cheese Burger', 'Burger', '490', 'Grilled patty with melted cheese and house sauce.'],
+
+  // Pizza
+  ['ስፔሻል ፒዛ / Special Pizza', 'Pizza', '530', 'A generous, cheesy house favorite.'],
+  ['አትክልት ፒዛ / Vegitable Pizza', 'Pizza', '420', 'Fresh vegetables, herbs and melted cheese.'],
+  ['ቺከን ፒዛ / Chicken Pizza', 'Pizza', '560', 'Loaded with savory chicken and mozzarella.'],
+
+  // Soup & Fish
+  ['ዶሮ ሾርባ / Chicken Soup', 'Soup', '370', 'Warm, deeply savory and made for slow lunches.'],
+  ['አትክልት ሾርባ / Vegitable Soup', 'Soup', '220', 'A bright, comforting bowl of seasonal vegetables.'],
+  ['አሳ ሾርባ / Fish Soup', 'Fish', '355', 'Lightly spiced and full of delicate flavor.'],
+  ['ግርል አሳ / Grill Fish', 'Fish', '450', 'Delicately grilled, served with fresh sides.'],
+
+  // Cold drinks
+  ['ስፔሻል ሞሂቶ / Special Mojito', 'Cold drinks', '185', 'A sparkling, minty cooler with fresh citrus.'],
+  ['ስትሮበሪ ሞሂቶ / Strawberry Mojito', 'Cold drinks', '160', 'Fresh strawberry, mint and a lively finish.'],
+  ['ኦሬንጅ ሞሂቶ / Orange Mojito', 'Cold drinks', '160', 'Bright orange with a cooling mint lift.'],
+
+  // Juice
+  ['አቮካዶ ጁስ / Avocado Juice', 'Juice', '185', 'Creamy, cool and blended to order.'],
+  ['አናናስ ጁስ / Pineapple Juice', 'Juice', '220', 'Fresh tropical sweetness in every glass.'],
+  ['ህብር ጁስ / Mixed Juice', 'Juice', '210', 'A colorful blend of the day’s freshest fruit.'],
+
+  // Salad
+  ['ፍሩት ሳላድ / Fruit Salad', 'Salad', '370', 'Freshly cut fruit, bright and naturally sweet.'],
+  ['ሚክስድ ሳላድ / Mixed Salad', 'Salad', '300', 'Crisp greens and colorful garden vegetables.'],
+  ['አቮካዶ ሳላድ / Avocado Salad', 'Salad', '290', 'Creamy avocado over fresh, crunchy greens.'],
+  ['ራሺያን ሳላድ / Russian Salad', 'Salad', '400', 'A generous, creamy classic.'],
+
+  // Hot drinks
+  ['ካፑቺኖ / Cappuccino', 'Hot drinks', '120', 'Velvety espresso, steamed milk and a soft crown.'],
+  ['ማኪያቶ / Macchiato', 'Hot drinks', '75', 'A short espresso touched with silky milk.'],
+  ['ስፔሻል ሻይ / Special Tea', 'Hot drinks', '95', 'Fragrant tea blended with a Canoe touch.'],
+  ['ጅንጅብል ሻይ / Ginger Tea', 'Hot drinks', '65', 'Bright ginger warmth, served hot.'],
+  ['ሎሚ ሻይ / Tea Lemon', 'Hot drinks', '55', 'A clean, citrusy cup.'],
+
+  // Cakes & Cookies
+  ['ክሬም ኬክ / Cream Cake', 'Cream cake', '180', 'Soft, creamy and finished with a light frosting.'],
+  ['ካኑ ስፔሻል ኬክ / Canoe Special Cake', 'Canoe special cake', '260', 'A signature cake with a rich Canoe-style finish.'],
+  ['ስፔሻል ቶርታ / Special Torta 1kg', 'Canoe special torta cake', '950', 'Our house torta layered with rich flavor and texture.'],
+  ['ቶርታ ኬክ / Torta Cake 1kg', 'Torta cake', '800', 'Classic torta cake with a delicate crumb.'],
+
+  // Snacks
+  ['ቺፕስ / French Fries', 'Snack', '230', 'Golden, crisp and perfectly salted.'],
+
+  // Fasting foods
+  ['ስፔሻል የፆም ፍርፍር / Special Fasting Firfir', 'Fasting foods', '260', 'በተለያዩ አትክልቶች እና ቅመሞች ያጌጠ ስፔሻል የፆም ፍርፍር።'],
+  ['ድርቆሽ ፍርፍር / Dirkosh Firfir', 'Fasting foods', '240', 'በቅመም እና በቲማቲም ሶስ የተሰራ ጥብስ ድርቆሽ ፍርፍር።'],
+  ['ጎመን ክትፎ / Gomen Kitifo', 'Fasting foods', '270', 'በቅመም የታሸ የጎመን ክትፎ።'],
+  ['ፓስታ በስልስ / Spageti With Silis', 'Fasting foods', '260', 'በጣፋጭ የቲማቲም ሶስ የተሰራ ፓስታ።'],
+    ['ፓስታ በአትክልት / Spageti With Vegetable', 'Fasting foods', '250', 'በጣፋጭ የቲማቲም ሶስ የተሰራ ፓስታ።'],
+  ['ሩዝ በአትክልት / Rice With Vegetable', 'Fasting foods', '250', 'ከተለያዩ አትክልቶች ጋር የተጠበሰ ለስላሳ ሩዝ።'],
+  ['ድንች ፍርፍር / Potato Firfir', 'Fasting foods', '250', 'ከተጠበሰ ድንች ጋር የተሰራ የፆም ፍርፍር።'],
+    ['ስፔሻል ድንች ፍርፍር / Special Potato Firfir', 'Fasting foods', '290', 'በተለያዩ አትክልቶች እና ቅመሞች ያጌጠ ስፔሻል የፆም ፍርፍር።'],
+  ['የፆም ፍርፍር / Fasting Firfir', 'Fasting foods', '210', 'በቀለል ያለ ቅመም የተሰራ የፆም ፍርፍር።'],
+  ['የፆም ጥብስ / Fasting Tibs', 'Fasting foods', '260', 'በአትክልቶች እና በቅመማ ቅመም የተጠበሰ የፆም ጥብስ።'],
+  ['ሽሮ / Shiro', 'Fasting foods', '180', 'በተለየ ሙያ የተሰራ ባህላዊ የሽሮ ወጥ።'],
+  ['ሽሮ ላላ / Shiro Lala', 'Fasting foods', '220', 'ቀለል ያለ የቀጠና ሽሮ ወጥ።'],
+  ['ተጋቢኖ / Tegabino', 'Fasting foods', '230', 'በትኩስ ድስት የሚቀርብ ፍልፍል ያለ ተጋቢኖ ሽሮ።'],
+  ['ስፔሻል ሽሮ / Special Shiro', 'Fasting foods', '260', 'በቅቤና በተለያዩ ግብዓቶች ያጌጠ ስፔሻል ሽሮ።'],
+  ['ሱፍ ፍትፍት / Suf Fitfit', 'Fasting foods', '185', 'በቀዝቃዛ የሱፍ ጭማቂ የተሰራ ባህላዊ ፍትፍት።'],
+  ['ካሮት ፍርፍር / Carrot Firfir', 'Fasting foods', '185', 'በካሮት እና በአትክልቶች የተሰራ የፆም ፍርፍር።'],
+  ['ስፔሻል ድርቆሽ ፍርፍር / Spe. Dirkosh Firfir', 'Fasting foods', '290', 'በተለያዩ አትክልቶች ያጌጠ ስፔሻል ድርቆሽ ፍርፍር።'],
+  ['ተልባ ፍትፍት / Telba Fitfit', 'Fasting foods', '200', 'በቅመም የተጠበሰ የዓሳ ጥብስ።'],
+  ['ጎመን ጥብስ / Gomen Tibs', 'Fasting foods', '220', 'ከዓሳ ጥብስ ጋር የተሰራ ጣፋጭ ፍርፍር።'],
+    ['ሽሮ በጎመን/ Shiro with Gomen', 'Fasting foods', '290', 'ከዓሳ ጥብስ ጋር የተሰራ ጣፋጭ ፍርፍር።'],
+  ['ሩዝ በአቮካዶ / Rice With Avocado', 'Fasting foods', '260', 'በትኩስ የአቮካዶ ክፋዮች የታጀበ ለስላሳ ሩዝ።'],
+  ['ቡፌ / Baffe', 'Fasting foods', '390', 'የተለያዩ የፆም ምግቦች ስብስብ (ቡፌ)።'],
+  ['ቲማቲም ለብለብ / Tomato Lebleb', 'Fasting foods', '230', 'በትኩስ ቲማቲም እና ቃሪያ የተሰራ ሰላጣ።'],
+])
 
 function AdminTable({ items, editingItem, setEditingItem, updateItem, removeItem }) {
-  return <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Dish</th><th>Category</th><th>Price</th><th>Description</th><th>Actions</th></tr></thead><tbody>{items.map((item) => {
+  const safeItems = Array.isArray(items) ? items : []
+
+  return <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Dish</th><th>Category</th><th>Price</th><th>Description</th><th>Actions</th></tr></thead><tbody>{safeItems.map((item) => {
     if (editingItem === item.name) {
           return <tr key={item.name}><td><input aria-label={`Edit ${item.name} name`} value={item.name} onChange={(event) => { updateItem(item.name, 'name', event.target.value); setEditingItem(event.target.value) }} /></td><td><select aria-label={`Edit ${item.name} category`} value={item.category} onChange={(event) => updateItem(item.name, 'category', event.target.value)}>{categories.slice(1).map((category) => <option key={category}>{category}</option>)}</select></td><td><input aria-label={`Edit ${item.name} price`} value={item.price} onChange={(event) => updateItem(item.name, 'price', event.target.value)} /></td><td><input aria-label={`Edit ${item.name} description`} value={item.description} onChange={(event) => updateItem(item.name, 'description', event.target.value)} /></td><td><button className="admin-action primary" type="button" onClick={() => setEditingItem(null)}>Save</button></td></tr>
     }
@@ -21,7 +160,9 @@ function AdminTable({ items, editingItem, setEditingItem, updateItem, removeItem
 }
 
 function CommentsTable({ comments, removeComment }) {
-  return <section className="comments-admin" aria-labelledby="comments-heading"><div className="comments-heading"><div><p className="eyebrow">Guest feedback</p><h3 id="comments-heading">Customer comments</h3></div><span>{comments.length} {comments.length === 1 ? 'comment' : 'comments'}</span></div>{comments.length ? <div className="comments-list">{comments.map((comment) => <article className="comment-item" key={comment.id}><div className="comment-meta"><strong>{comment.name || 'Anonymous guest'}</strong><span>{comment.rating ? `${comment.rating}/5 stars` : 'No rating'}</span></div><p>{comment.text}</p><button className="admin-action danger" type="button" onClick={() => removeComment(comment.id)}>Delete comment</button></article>)}</div> : <p className="comments-empty">Customer comments will appear here after guests submit a review.</p>}</section>
+  const safeComments = Array.isArray(comments) ? comments : []
+
+  return <section className="comments-admin" aria-labelledby="comments-heading"><div className="comments-heading"><div><p className="eyebrow">Guest feedback</p><h3 id="comments-heading">Customer comments</h3></div><span>{safeComments.length} {safeComments.length === 1 ? 'comment' : 'comments'}</span></div>{safeComments.length ? <div className="comments-list">{safeComments.map((comment) => <article className="comment-item" key={comment.id}><div className="comment-meta"><strong>{comment.name || 'Anonymous guest'}</strong><span>{comment.rating ? `${comment.rating}/5 stars` : 'No rating'}</span></div><p>{comment.text}</p><button className="admin-action danger" type="button" onClick={() => removeComment(comment.id)}>Delete comment</button></article>)}</div> : <p className="comments-empty">Customer comments will appear here after guests submit a review.</p>}</section>
 }
 
 function App() {
@@ -37,7 +178,7 @@ function App() {
   const [adminPassword, setAdminPassword] = useState('')
   const [loginError, setLoginError] = useState('')
   const [editingItem, setEditingItem] = useState(null)
-  const [newItem, setNewItem] = useState({ name: '', category: 'Mains', price: '', description: '' })
+  const [newItem, setNewItem] = useState({ name: '', category: 'Breakfast', price: '', description: '' })
 
   const filteredItems = useMemo(() => menuItems.filter((item) => {
     const matchesCategory = activeCategory === 'All dishes' || item.category === activeCategory
@@ -50,7 +191,7 @@ function App() {
     event.preventDefault()
     if (!newItem.name.trim() || !newItem.price.trim() || !newItem.description.trim()) return
     setMenuItems((items) => [...items, { ...newItem, name: newItem.name.trim(), price: newItem.price.trim(), description: newItem.description.trim() }])
-    setNewItem({ name: '', category: 'Mains', price: '', description: '' })
+    setNewItem({ name: '', category: 'Breakfast', price: '', description: '' })
   }
   const handleAdminLogin = (event) => {
     event.preventDefault()
