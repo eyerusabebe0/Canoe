@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-const categories = ['All dishes', 'Breakfast', 'Fasting foods', 'Non fasting foods', 'Burger', 'Noodles', 'Pizza', 'Snack', 'Fish', 'Juice', 'Salad', 'Soup', 'Cold drinks', 'Hot drinks', 'Cream cake', 'Canoe special cake', 'Canoe special torta cake', 'Torta cake', 'Cookies']
+const categories = ['All dishes', 'Breakfast', 'Fasting foods', 'Non fasting foods', 'Burger', 'Noodles', 'Pizza', 'Snack', 'Fish', 'Juice', 'Salad', 'Soup', 'ለስላሳ መጠጦች', 'ተጨማሪ', 'Cold drinks', 'Hot drinks', 'Cream cake', 'Canoe special cake', 'Canoe special torta cake', 'Torta cake', 'Cookies']
 
 const normalizeMenuItems = (items = []) => {
   if (!Array.isArray(items)) return []
@@ -58,6 +58,7 @@ const initialMenuItems = normalizeMenuItems([
   ['ስፔሻል ክትፎ / Special Kitfo', 'Non fasting foods', '750', 'አይብ እና ጎመን አጅቦ የሚቀርብ ስፔሻል ክትፎ።'],
   ['ስጋ ፍርፍር / Meat Firfir', 'Non fasting foods', '330', 'በቅመም ከተጠበሰ ስጋ ጋር የተሰራ ፍርፍር።'],
   ['ስፔሻል የስጋ ፍርፍር / Special Meat Firfir', 'Non fasting foods', '390', 'በተጨማሪ ስጋ እና እንቁላል ያጌጠ ስፔሻል ፍርፍር።'],
+
   ['ድርቆሽ ፍርፍር በስጋ / Dirkosh firfir with Kwanta', 'Non fasting foods', '350', 'በደረቀ የቋንጣ ስጋ የተሰራ ድርቆሽ ፍርፍር።'],
   ['ድርቆሽ ፍርፍር በቋንጣ / Dirkosh firfir with Kwanta', 'Non fasting foods', '370', 'በደረቀ የቋንጣ ስጋ የተሰራ ድርቆሽ ፍርፍር።'],
   ['ፓስታ በስጋ / Spageti With Meat', 'Non fasting foods', '320', 'በተፈጨ የስጋ ሶስ የተሰራ ፓስታ።'],
@@ -69,57 +70,64 @@ const initialMenuItems = normalizeMenuItems([
   ['ግሪል ጥብስ / Grill Tibs', 'Non fasting foods', '550', 'በፍህም ላይ በጥንቃቄ የተጠበሰ የስጋ ጥብስ።'],
   ['ፓስታ ካርቦናራና / Spageti With qarbonara', 'Non fasting foods', '395', 'በክሬም እና በስጋ ሶስ የተሰራ ልዩ ፓስታ።'],
   // Noodles
-  ['አትክልት ኑድል / Vegitable Noodles', 'Noodles', '480', 'ከተለያዩ ትኩስ አትክልቶች ጋር የተጠበሰ ኑድልስ።'],
-  ['ስፔሻል ኑድል / Special Noodles', 'Noodles', '650', 'በተለያዩ ልዩ ግብዓቶች የበለጸገ ስፔሻል ኑድልስ።'],
-  ['አሳ ኑድል / Fish Noodles', 'Noodles', '545', 'ከቅመም አሳ ክፋዮች ጋር የተሰራ ኑድልስ።'],
-  ['ዶሮ ኑድል / Yard Noodles', 'Noodles', '590', 'በልዩ አሰራር የተዘጋጀ የያርድ ኑድልስ።'],
-  ['ስጋ ኑድል / Meat Noodles', 'Noodles', '580', 'ከተጠበሰ የስጋ ክፋዮች ጋር የተሰራ ኑድልስ።'],
-  // Burger (በርገር)
-  ['ስፔሻል ደብል በርገር / Special Duble burger', 'Burger', '695', 'Two juicy patties stacked with cheese, lettuce, and house sauce.'],
-  ['ደብል በርገር / Duble Burger', 'Burger', '570', 'Double beef patties served with fresh toppings.'],
-  ['ስፔሻል በርገር / Special Burger', 'Burger', '515', 'A loaded house special burger with rich toppings.'],
-  ['ኖርማል በርገር / Normal Burger', 'Burger', '450', 'A classic grilled beef patty with fresh vegetables.'],
-  ['ቺዝ በርገር / Cheese Burger', 'Burger', '490', 'A seasoned beef patty topped with melted cheese.'],
-  ['ቺከን በርገር / Chicken Burger', 'Burger', '520', 'Crispy chicken patty with fresh salad and special sauce.'],
-  ['አትክልት በርገር / Vegitable Burger', 'Burger', '320', 'A flavorful plant-based patty served with fresh greens.'],
-  ['በርገሪዛ / Berugerzza', 'Burger', '580', 'A unique hybrid fusion of a burger and a mini pizza.'],
+  ['ስፓጌቲ በስጋ / Spageti With Meat', 'Noodles', '320', 'Comforting pasta finished with our rich meat sauce.'],
+  ['ፓስታ በስልስ / Spageti With Silis', 'Noodles', '260', 'Creamy noodles topped with sauce and herbs.'],
 
-  // Soup
-  ['ዶሮ ሾርባ / Chicken Soup', 'Soup', '370', 'Warm, deeply savory chicken broth made for a light lunch.'],
-  ['አትክልት ሾርባ / Vegitable Soup', 'Soup', '220', 'A bright, comforting bowl of simmered seasonal vegetables.'],
-  ['ሚኒስትሮኒ ሾርባ / Minstroni Soup', 'Soup', '260', 'Hearty Italian-style vegetable soup with pasta.'],
-  ['ቲማቲም ሾርባ / Tomato Soup', 'Soup', '200', 'Smooth, rich tomato soup served warm.'],
-  ['ዓሳ ሾርባ / Fish Soup', 'Soup', '355', 'Lightly spiced broth infused with fresh delicate fish flavor.'],
-  ['ስጋ ሾርባ / Meat Soup', 'Soup', '350', 'Rich, slow-simmered beef broth with aromatic spices.'],
+  // Burger
+  ['ስፔሻል ክለብ ሳንዱች / Special Club Sandwich', 'Burger', '620', 'Stacked with fresh greens, cheese and our house filling.'],
+  ['ስፔሻል ዳብል በርገር / Special Duble burger', 'Burger', '695', 'Two juicy patties, cheese, lettuce and tomato.'],
+  ['ቺከን በርገር / Chicken Burger', 'Burger', '520', 'Crisp chicken, fresh salad and a toasted bun.'],
+  ['ቺዝ በርገር / Cheese Burger', 'Burger', '490', 'Grilled patty with melted cheese and house sauce.'],
 
-  // Pizza (ፒዛ)
-  ['ስፔሻል ፒዛ / Special Pizza', 'Pizza', '530', 'Our house signature pizza with loaded toppings and melted mozzarella.'],
-  ['ቢፍ ፒዛ / Beef Pizza', 'Pizza', '490', 'Topped with seasoned ground beef and mozzarella cheese.'],
-  ['ቺከን ፒዛ / Chicken Pizza', 'Pizza', '525', 'Savory shredded chicken over tomato sauce and cheese.'],
-  ['ቱና ፒዛ / Tuna Pizza', 'Pizza', '510', 'Flaked tuna, onions, and melted cheese on a crisp crust.'],
-  ['አትክልት ፒዛ / Vegitable Pizza', 'Pizza', '350', 'Freshly sliced garden vegetables and melted cheese.'],
-  ['ስፔሻል አትክልት ፒዛ / Special Vegitable Pizza', 'Pizza', '420', 'Richly loaded assortment of fresh vegetables and herbs.'],
-  ['ማርጋሪታ ፒዛ / Margarita Pizza', 'Pizza', '470', 'Classic tomato sauce topped with extra mozzarella.'],
-  ['አቢሲኒያ ፒዛ / Abyssinia Pizza', 'Pizza', '530', 'Special local Ethiopian-inspired spiced pizza.'],
-  ['ኦሊቭ ፒዛ / Olive Pizza', 'Pizza', '490', 'Sliced black and green olives with rich mozzarella cheese.'],
-  ['ስፔሻል የጤፍ ፒዛ /Special Teff Pizza', 'Pizza', '530', 'Special chef-recommended house-style pizza.'],
+  // Pizza
+  ['ስፔሻል ፒዛ / Special Pizza', 'Pizza', '530', 'A generous, cheesy house favorite.'],
+  ['አትክልት ፒዛ / Vegitable Pizza', 'Pizza', '420', 'Fresh vegetables, herbs and melted cheese.'],
+  ['ቺከን ፒዛ / Chicken Pizza', 'Pizza', '560', 'Loaded with savory chicken and mozzarella.'],
 
-  // Fish (አሳ)
-  ['አሳ ፍርፍር / Fish Firfir', 'Fish', '480', 'Seasoned fish bites tossed with soft torn injera.'],
-  ['አሳ ጉላሽ / Fish Gulash', 'Fish', '510', 'Sautéed fish cubes cooked in a savory tomato garlic sauce.'],
-  ['አሳ ዱለት / Fish Dulet', 'Fish', '490', 'Finely minced fish cooked with herbs, butter, and spices.'],
-  ['አሳ ኮትሌት / Fish Kotelate', 'Fish', '520', 'Pan-fried breaded fish fillet cutlets.'],
-  ['ግሪል አሳ / Grill Fish', 'Fish', '550', 'Delicately grilled whole fish fillet served with fresh lemon.'],
+  // Soup & Fish
+  ['ዶሮ ሾርባ / Chicken Soup', 'Soup', '370', 'Warm, deeply savory and made for slow lunches.'],
+  ['አትክልት ሾርባ / Vegitable Soup', 'Soup', '220', 'A bright, comforting bowl of seasonal vegetables.'],
+  ['አሳ ሾርባ / Fish Soup', 'Fish', '355', 'Lightly spiced and full of delicate flavor.'],
+  ['ግርል አሳ / Grill Fish', 'Fish', '450', 'Delicately grilled, served with fresh sides.'],
 
   // Cold drinks
   ['ስፔሻል ሞሂቶ / Special Mojito', 'Cold drinks', '185', 'A sparkling, minty cooler with fresh citrus.'],
   ['ስትሮበሪ ሞሂቶ / Strawberry Mojito', 'Cold drinks', '160', 'Fresh strawberry, mint and a lively finish.'],
-  ['ኦሬንጅ ሞሂቶ / Orange Mojito', 'Cold drinks', '160', 'Bright orange with a cooling mint lift.'],
+  ['ብርቱካን ሞሂቶ / Orange Mojito', 'Cold drinks', '160', 'Bright orange with a cooling mint lift.'],
+  ['ስፔሻል አምቦ ውሃ በማር / Spe Ambo water with Hony', 'Cold drinks', '150', 'Ambo mineral water blended with natural honey.'],
+  ['አምቦ ውሃ በማር / Ambo water with Hony', 'Cold drinks', '125', 'Refreshing Ambo water sweetened with honey.'],
+  ['አይስ ኮፊ / Ice Coffee', 'Cold drinks', '120', 'Chilled brewed coffee over ice.'],
+  ['አይስ ላቴ / Ice Lati', 'Cold drinks', '180', 'Espresso poured over chilled milk and ice.'],
+  ['ካራሜል አይስ ኮፊ / Caramel Ice Coffee', 'Cold drinks', '180', 'Cold coffee infused with rich caramel flavor.'],
+  ['አይስ ፍራፓቺኖ / Ice Frapachino', 'Cold drinks', '170', 'Blended iced coffee drink.'],
+  ['ስትሮበሪ አይስ ፍራፓቺኖ / Str Ice Frapachino', 'Cold drinks', '170', 'Blended iced coffee with sweet strawberry flavor.'],
+  ['ብርቱካን አይስ ፍራፓቺኖ / Orange Ice Frapachino', 'Cold drinks', '170', 'Blended iced coffee with a zesty orange twist.'],
+  ['አናናስ አይስ ፍራፓቺኖ / Pineapple Ice Frapachino', 'Cold drinks', '170', 'Blended iced coffee with tropical pineapple.'],
+  ['ስፔሻል አይስ ፍራፓቺኖ / Special Ice Frapachino', 'Cold drinks', '210', 'House special blended iced coffee drink.'],
+  ['ስፔሻል ሚክስድ አይስ ላቴ / Special Mixed Ice Lati', 'Cold drinks', '220', 'Special blend of iced latte flavors.'],
+  ['አቫታር / Avater', 'Cold drinks', '150', 'A refreshing custom mixed specialty cooler.'],
+  ['ታይታኒክ ሞሂቶ / Titanic Mojito', 'Cold drinks', '165', 'Cool blue tropical mojito mix.'],
+  ['ሌመን ሞሂቶ / Lemon Mojito', 'Cold drinks', '150', 'Classic minty lemonade cooler.'],
+  ['ላቭ ሞሂቶ / Love Mojito', 'Cold drinks', '165', 'Sweet fruity mojito blend.'],
+  ['ስሙዚ ሞሂቶ / Smoothie Mojito', 'Cold drinks', '165', 'Creamy blended smoothie with a minty kick.'],
+  ['ሚክስድ አይስ ላቴ / Mixed Ice Lati', 'Cold drinks', '185', 'Chilled espresso and milk with mixed flavors.'],
+  ['ያም ሞሂቶ / Yame Mojito', 'Cold drinks', '175', 'Delicious specialty fruit mojito.'],
+  ['ሰንሴት ሞሂቶ / Sensat Mojeto', 'Cold drinks', '175', 'Layered sunset-inspired fruity cooler.'],
+  ['ስፔሻል ኮፊ / Special Coffee', 'Cold drinks', '160', 'Signature cold coffee specialty.'],
+  ['ኪንግ ሞሂቶ / King Mojeto', 'Cold drinks', '175', 'Rich and bold refreshing mojito.'],
+  ['ካራሜል አይስ ላቴ / Caramel Ice Lati', 'Cold drinks', '200', 'Chilled espresso and milk with rich caramel.'],
+  ['ሀብሀብ ሞሂቶ / Watermelon Mojito', 'Cold drinks', '150', 'Juicy watermelon blended with fresh mint and citrus.'],
 
   // Juice
-  ['አቮካዶ ጁስ / Avocado Juice', 'Juice', '185', 'Creamy, cool and blended to order.'],
+ 
+  ['ኖርማል ጁስ / Normal Juice', 'Juice', '185', 'Classic refreshing fresh juice blend.'],
+  ['ካኖ ስፔሻል ጁስ / Canoe Special Juice', 'Juice', '230', 'Signature house blend packed with tropical flavors.'],
+  ['ማንጎ ጁስ / Mango Juice', 'Juice', '185', 'Rich, smooth, and naturally sweet fresh mango.'],
+  ['አቮካዶ ጁስ / Avocado Juice', 'Juice', '185', 'Creamy, cool, and blended fresh to order.'],
+  ['ፓፓያ ጁስ / Papaya Juice', 'Juice', '185', 'Light, smooth, and full of sweet papaya goodness.'],
+  ['ሀብሀብ ጁስ / Watermelon Juice', 'Juice', '185', 'Hydrating, cool, and naturally sweet pure watermelon.'],
   ['አናናስ ጁስ / Pineapple Juice', 'Juice', '220', 'Fresh tropical sweetness in every glass.'],
-  ['ህብር ጁስ / Mixed Juice', 'Juice', '210', 'A colorful blend of the day\u2019s freshest fruit.'],
+  ['ህብር ጁስ / Mixed Juice', 'Juice', '210', 'A colorful blend of the day’s freshest fruit.'],
 
   // Salad
   ['ፍሩት ሳላድ / Fruit Salad', 'Salad', '370', 'Freshly cut fruit, bright and naturally sweet.'],
@@ -129,59 +137,49 @@ const initialMenuItems = normalizeMenuItems([
   ['ድንች ሳላድ / Potato Salad', 'Salad', '270', 'Tender diced potatoes tossed with herbs and seasoning.'],
   ['ራሺያን ሳላድ / Russian Salad', 'Salad', '400', 'A generous, creamy classic.'],
   // Hot drinks
+ ['አዲሱ ሻይ / Addis Tea', 'Hot drinks', '60', 'A warm classic house tea.'],
+  ['ስፔሻል ሻይ / Special Tea', 'Hot drinks', '95', 'Fragrant tea blended with a Canoe touch.'],
+  ['ሻይ / Tea', 'Hot drinks', '45', 'Classic hot black tea.'],
+  ['ሻይ ለሞን  / Tea Lemon', 'Hot drinks', '65', 'A clean, citrusy cup.'],
+  ['ካራቫት ሻይ/ Caravat Tea', 'Hot drinks', '45', 'Warm infused carrot tea.'],
+  ['ሞሪንጋ ሻይ / Moringa Tea', 'Hot drinks', '65', 'Nutritious and earthy moringa tea.'],
+  ['ሚንት ሻይ/ meant Tea', 'Hot drinks', '65', 'Strong and aromatic black tea.'],
+  ['አረንጓዴ ሻይ / Green Tea', 'Hot drinks', '65', 'Light and refreshing green tea.'],
+  ['ጦስኒ ሻይ/ tosgni Tea', 'Hot drinks', '65', 'Warm spiced cinnamon infused tea.'],
+  ['ብርቱካን ሻይ / orange Tea', 'Hot drinks', '75', 'Classic black tea with creamy milk.'],
+  ['ማንጎ ሻይ / Mango Tea', 'Hot drinks', '75', 'Fruity and warm mango-flavored tea.'],
+  ['አናናስ ሻይ / Pineapple Tea', 'Hot drinks', '75', 'Warm tea infused with tropical pineapple.'],
+  ['ስትሮበሪ ሻይ / Strawberry Tea', 'Hot drinks', '75', 'Sweet and fragrant strawberry tea.'],
+  ['ቀረፋ ሻይ / Cinnamon Tea', 'Hot drinks', '65', 'Warm spiced cinnamon infused tea.'],
+  ['ሻይ ስፕራይት / Tea Sprite', 'Hot drinks', '65', 'A unique citrus tea blend.'],
+  ['የጀበና ቡና / Cultural Coffee', 'Hot drinks', '50', 'Traditionally brewed Ethiopian coffee.'],
+  ['ግንፍል ቡና / Ginfil Coffee', 'Hot drinks', '60', 'Traditional boiled Ethiopian style coffee.'],
+  ['ቡና ካራቫት / Coffee Caravat', 'Hot drinks', '80', 'Rich espresso layered with rich flavor.'],
+  ['ወተት / Milk', 'Hot drinks', '80', 'Fresh warm steamed milk.'],
+  ['ማኪያቶ / Macchiato', 'Hot drinks', '75', 'A short espresso touched with silky milk.'],
+  ['የጾም ማኪያቶ / Fasting Macchiato', 'Hot drinks', '95', 'Non-dairy macchiato option.'],
+  ['ደብል ማኪያቶ / Duble Macchiato', 'Hot drinks', '150', 'Double shot espresso topped with milk foam.'],
+  ['ደብል የጾም ማኪያቶ / Double Fasting Macchiato', 'Hot drinks', '180', 'Double shot non-dairy macchiato.'],
+  ['ለውዝ / Peanut', 'Hot drinks', '70', 'Warm, creamy peanut drink.'],
+  ['ስፔሻል ለውዝ / Special Peanut', 'Hot drinks', '110', 'Rich house special peanut drink.'],
+  ['ለውዝ በሻይ / Peanut With Tea', 'Hot drinks', '65', 'A distinct fusion of tea and creamy peanut.'],
+  ['ለውዝ በወተት / Peanut With Milk', 'Hot drinks', '90', 'Warm milk blended with rich peanut flavor.'],
+  ['ለውዝ በቡና / Peanut With Coffee', 'Hot drinks', '80', 'Unique coffee blended with peanut flavor.'],
   ['ካፑቺኖ / Cappuccino', 'Hot drinks', '120', 'Velvety espresso, steamed milk and a soft crown.'],
   ['ማኪያቶ / Macchiato', 'Hot drinks', '75', 'A short espresso touched with silky milk.'],
   ['ስፔሻል ሻይ / Special Tea', 'Hot drinks', '95', 'Fragrant tea blended with a Canoe touch.'],
   ['ጅንጅብል ሻይ / Ginger Tea', 'Hot drinks', '65', 'Bright ginger warmth, served hot.'],
   ['ሎሚ ሻይ / Tea Lemon', 'Hot drinks', '55', 'A clean, citrusy cup.'],
 
-  // Cream cake (ተራ ኬክ / ኬኮች)
- ['ቲራሚሶ ካፕ / Tiramiso Cap', 'Cream cake', '80', 'Classic espresso-soaked layered dessert cup.'],
-  ['ካራሜል / Caramel', 'Cream cake', '90', 'Rich cake slice topped with smooth caramel glaze.'],
-  ['ቸኮሌት / Chocolate', 'Cream cake', '110', 'Decadent rich chocolate cake slice.'],
-  ['ስትሮበሪ / Strawberry', 'Cream cake', '95', 'Light cake slice layered with strawberry frosting.'],
-  ['ብላክ ፎረስት / Black Forest', 'Cream cake', '110', 'Classic chocolate sponge with cherries and cream.'],
-  ['ቴራሚሶ / Teramiso', 'Cream cake', '90', 'Rich coffee-flavored layered cake slice.'],
-  ['ካሪፎርኒያ / California', 'Cream cake', '90', 'Fruity layered specialty cake slice.'],
-  ['ኋይት ፎረስት / White Forest', 'Cream cake', '110', 'Soft white vanilla sponge with cream layers.'],
+  // Cakes & Cookies
+  ['ክሬም ኬክ / Cream Cake', 'Cream cake', '180', 'Soft, creamy and finished with a light frosting.'],
+  ['ካኑ ስፔሻል ኬክ / Canoe Special Cake', 'Canoe special cake', '260', 'A signature cake with a rich Canoe-style finish.'],
+  ['ስፔሻል ቶርታ / Special Torta 1kg', 'Canoe special torta cake', '950', 'Our house torta layered with rich flavor and texture.'],
+  ['ቶርታ ኬክ / Torta Cake 1kg', 'Torta cake', '800', 'Classic torta cake with a delicate crumb.'],
 
-  // Canoe special cake (ካኑ ስፔሻል ኬክ)
-  ['ቦክሰኛ / Bigen', 'Canoe special cake', '110', 'Classic crisp specialty baked cake slice.'],
-  ['ሚኒፎኒ / Minifonie', 'Canoe special cake', '120', 'Rich layered mini specialty cake.'],
-  ['ሃቫና / Havanna', 'Canoe special cake', '110', 'Sweet Havanna-style layered cake slice.'],
-  ['ካሮት / Carrot', 'Canoe special cake', '100', 'Moist spiced carrot cake slice.'],
-  ['ጋናቫ / Ganava', 'Canoe special cake', '110', 'Rich chocolate ganache specialty cake.'],
-  ['ደብል ቸኮሌት / Double Chocolate', 'Canoe special cake', '150', 'Decadent double chocolate layered cake.'],
-  ['ደብል ስትሮበሪ / Double Strawberry', 'Canoe special cake', '110', 'Sweet double strawberry cream cake slice.'],
+  // Snacks
+  ['ቺፕስ / French Fries', 'Snack', '230', 'Golden, crisp and perfectly salted.'],
 
-  // Canoe special torta cake (ስፔሻል ቶርታ / Special Torta)
-  ['ስፔሻል ቶርታ 1kg / Special Torta 1kg', 'Canoe special torta cake', '950', 'Our house torta layered with rich flavor and texture.'],
-  ['ስፔሻል ቶርታ 1.5kg / Special Torta 1.5kg', 'Canoe special torta cake', '1350', 'Generous 1.5kg special torta cake for celebrations.'],
-  ['ስፔሻል ቶርታ 2kg / Special Torta 2kg', 'Canoe special torta cake', '1900', 'Large 2kg special torta layered with sweet frosting.'],
-  ['ስፔሻል ቶርታ 3kg / Special Torta 3kg', 'Canoe special torta cake', '2700', '3kg special celebration torta cake.'],
-  ['ስፔሻል ቶርታ 4kg / Special Torta 4kg', 'Canoe special torta cake', '3500', 'Extra large 4kg multi-layered special torta.'],
-
-  // Torta cake (ቶርታ ኬክ / Torta Cake)
-  ['ቶርታ ኬክ 1kg / Torta Cake 1kg', 'Torta cake', '800', 'Classic torta cake with a delicate crumb.'],
-  ['ቶርታ ኬክ 1.5kg / Torta Cake 1.5kg', 'Torta cake', '1150', 'Classic 1.5kg torta cake with smooth icing.'],
-  ['ቶርታ ኬክ 2kg / Torta Cake 2kg', 'Torta cake', '1600', 'Delicate 2kg torta cake layered with soft sponge.'],
-  ['ቶርታ ኬክ 3kg / Torta Cake 3kg', 'Torta cake', '2400', '3kg traditional torta cake for special gatherings.'],
-  ['ቶርታ ኬክ 4kg / Torta Cake 4kg', 'Torta cake', '3200', 'Large 4kg classic celebration torta cake.'],
-
-  // Cookies
-  ['1/4 Kg', 'Cookies', '200', 'Crispy baked tea cookies.'],
-  ['1/2 Kg', 'Cookies', '300', 'Assorted sweet buttery biscuit cookies.'],
-  ['1 Kg', 'Cookies', '600', 'Rich Cuban-style sweet biscuits.'],
-
-  // Snack (ስናክ)
-  ['ስፔሻል ክለብ ሳንዱች / Special Club Sandwich', 'Snack', '520', 'Triple-decker stacked sandwich loaded with meat, cheese, and greens.'],
-  ['ክለብ ሳንዱች / Club Sandwich', 'Snack', '480', 'Classic toasted sandwich with savory layers.'],
-  ['አትክልት ሳንዱች / Vegitable Sandwich', 'Snack', '210', 'Fresh garden vegetables layered in toasted bread.'],
-  ['ቱና ሳንዱች / Tuna Sandwich', 'Snack', '420', 'Seasoned tuna mix served inside warm sandwich bread.'],
-  ['ቺክን ራፕ / Chicken Rap', 'Snack', '480', 'Tender chicken strips wrapped in a soft flatbread.'],
-  ['አትክልት ራፕ / Vegitable Rap', 'Snack', '290', 'Sautéed fresh vegetables wrapped tightly in soft bread.'],
-  ['ስጋ ራፕ / Beef Rap', 'Snack', '430', 'Seasoned beef strips wrapped with fresh toppings.'],
-  ['ቺፕስ / French Fries', 'Snack', '250', 'Golden, crispy fried potatoes lightly salted.'],
   // Fasting foods
   ['የፆም ካኑ ስፔሻል /Fasting Canoe Special', 'Fasting foods', '1100', 'በተለያዩ አትክልቶች እና ቅመሞች ያጌጠ ስፔሻል የፆም ፍርፍር።'],
   ['ስፔሻል የፆም ፍርፍር / Special Fasting Firfir', 'Fasting foods', '260', 'በተለያዩ አትክልቶች እና ቅመሞች ያጌጠ ስፔሻል የፆም ፍርፍር።'],
