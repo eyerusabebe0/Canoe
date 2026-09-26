@@ -1,7 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import { normalizeCategoryName, splitDisplayName } from './menuFormat'
 
-const API_URL = 'http://localhost:4000/api'
+const API_URL = (import.meta.env.VITE_API_URL || 'https://canoe-backend.onrender.com/api').replace(/\/$/, '')
 
 function CommentsTable({ comments, removeComment }) {
   const safeComments = Array.isArray(comments) ? comments : []
