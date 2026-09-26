@@ -33,18 +33,32 @@ export function splitDisplayName(rawValue = '') {
   }
 }
 
-// Categories are bilingual, same as dish names: "አማርኛ / English".
-// We only trim and collapse whitespace here — we no longer strip the
-// Amharic half out, so "በርገር / Burger" stays "በርገር / Burger" everywhere
-// (menu tabs, admin pills, the dish table, etc).
+export function parseMenuItemName(rawValue = '') {
+  const parsed = splitDisplayName(rawValue)
+  return {
+    amharicName: String(parsed.amharicName || '').trim(),
+    name: String(parsed.name || '').trim(),
+  }
+}
+
+// Keep the original bilingual category label so the menu and admin dropdowns
+// can display both scripts. The English half is still available for matching
+// when needed through a separate key helper.
 export function normalizeCategoryName(rawValue = '') {
   const value = String(rawValue ?? '').trim()
   if (!value) return ''
 
+  return value.replace(/\s+/g, ' ')
+}
+
+export function getCategoryKey(rawValue = '') {
+  const value = normalizeCategoryName(rawValue)
+  if (!value) return ''
+
   if (value.includes(' / ')) {
     const parts = value.split(' / ').map((part) => part.trim()).filter(Boolean)
-    return parts.join(' / ').replace(/\s+/g, ' ')
+    return (parts.at(-1) || value).replace(/\s+/g, ' ')
   }
 
-  return value.replace(/\s+/g, ' ')
+  return value
 }

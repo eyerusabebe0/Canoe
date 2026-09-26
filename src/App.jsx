@@ -1,7 +1,47 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
-import { normalizeCategoryName, splitDisplayName } from './menuFormat'
+import { getCategoryKey, normalizeCategoryName, parseMenuItemName, splitDisplayName } from './menuFormat'
 
 const API_URL = (import.meta.env.VITE_API_URL || 'https://canoe-backend.onrender.com/api').replace(/\/$/, '')
+
+const readApiResponse = async (response) => {
+  const body = await response.text()
+
+  try {
+    return body ? JSON.parse(body) : {}
+  } catch {
+    if (response.status === 404) {
+      throw new Error('Credential changes are not available on the deployed backend yet. Deploy the latest Canoe-backend and try again.')
+    }
+
+    throw new Error(`The server returned an unexpected response (${response.status}).`)
+  }
+}
+
+const CATEGORY_IMAGES = {
+  'All dishes': { src: '/all dishes.jpg', alt: 'All dishes' },
+  Breakfast: { src: '/breakfast.jpg', alt: 'Breakfast dishes' },
+  'Fasting Foods': { src: '/fasting.jpg', alt: 'Fasting dishes' },
+  'Non-Fasting Foods': { src: '/non fasting.jpg', alt: 'Non-fasting dishes' },
+  Burger: { src: '/burger.jpg', alt: 'Freshly prepared burger' },
+  Noodles: { src: '/noodels.jpg', alt: 'Noodle dishes' },
+  Pizza: { src: '/pizza.jpg', alt: 'Freshly baked pizza' },
+  Snack: { src: '/snack.jpg', alt: 'Snacks' },
+  Fish: { src: '/fish.jpg', alt: 'Fish dishes' },
+  Juice: { src: '/juice.png', alt: 'Fresh juice' },
+  'Hot Drinks': { src: '/hot drinks.jpg', alt: 'Hot drinks' },
+  'Soft Drinks': { src: '/soft drinks.jpg', alt: 'Soft drinks' },
+  Extras: { src: '/extra.jpg', alt: 'Extra items' },
+  Extra: { src: '/extra.jpg', alt: 'Extra items' },
+  'Cold Drinks': { src: '/mohito.jpg', alt: 'Mojito drink' },
+  Salad: { src: '/salad.jpg', alt: 'Fresh salad' },
+  Soup: { src: '/soup.jpg', alt: 'Soup' },
+  'Cream Cake': { src: '/cream cake.jpg', alt: 'Cream cake' },
+  'Canoe Special Cake': { src: '/canoe special cake.jpg', alt: 'Canoe special cake' },
+  'Canoe Special': { src: '/canoe special cake.jpg', alt: 'Canoe special cake' },
+  'Canoe Special Torta Cake': { src: '/canoe special torta cake.jpg', alt: 'Canoe special torta cake' },
+  'Torta Cake': { src: '/torta cake.jpg', alt: 'Torta cake' },
+  Cookies: { src: '/cookies.jpg', alt: 'Cookies' },
+}
 
 function CommentsTable({ comments, removeComment }) {
   const safeComments = Array.isArray(comments) ? comments : []
@@ -51,6 +91,13 @@ function App() {
   const [adminEmail, setAdminEmail] = useState('')
   const [adminPassword, setAdminPassword] = useState('')
   const [loginError, setLoginError] = useState('')
+  const [showCredentialForm, setShowCredentialForm] = useState(false)
+  const [currentAdminEmail, setCurrentAdminEmail] = useState('')
+  const [currentAdminPassword, setCurrentAdminPassword] = useState('')
+  const [newAdminEmail, setNewAdminEmail] = useState('')
+  const [newAdminPassword, setNewAdminPassword] = useState('')
+  const [confirmAdminPassword, setConfirmAdminPassword] = useState('')
+  const [credentialMessage, setCredentialMessage] = useState('')
   const [newCategory, setNewCategory] = useState('')
   const [showCategoryCreator, setShowCategoryCreator] = useState(false)
   const [showAddDishForm, setShowAddDishForm] = useState(false)
@@ -69,6 +116,7 @@ function App() {
   const [adminCategory, setAdminCategory] = useState('All categories')
 
   const categoryOptions = useMemo(() => (Array.isArray(categories) ? categories.filter((category) => category !== 'All dishes') : []), [categories])
+  const activeCategoryImage = CATEGORY_IMAGES[getCategoryKey(activeCategory)]
 
   const formatCombinedName = (item = {}) => {
     const parsedName = splitDisplayName(item.name || item.amharicName || '')
@@ -110,11 +158,11 @@ function App() {
   }, [])
 
   const orderedMenuItems = useMemo(() => {
-    const categoryOrder = new Map(categoryOptions.map((category, index) => [category, index]))
+    const categoryOrder = new Map(categoryOptions.map((category, index) => [getCategoryKey(category), index]))
 
     return [...menuItems].sort((first, second) => {
-      const firstIndex = categoryOrder.get(first.category) ?? Number.MAX_SAFE_INTEGER
-      const secondIndex = categoryOrder.get(second.category) ?? Number.MAX_SAFE_INTEGER
+      const firstIndex = categoryOrder.get(getCategoryKey(first.category)) ?? Number.MAX_SAFE_INTEGER
+      const secondIndex = categoryOrder.get(getCategoryKey(second.category)) ?? Number.MAX_SAFE_INTEGER
 
       if (firstIndex !== secondIndex) return firstIndex - secondIndex
       return String(first.name).localeCompare(String(second.name))
@@ -124,7 +172,7 @@ function App() {
   const filteredItems = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
     return orderedMenuItems.filter((item) => {
-      const matchesCategory = activeCategory === 'All dishes' || item.category === activeCategory
+      const matchesCategory = activeCategory === 'All dishes' || getCategoryKey(item.category) === getCategoryKey(activeCategory)
       const itemText = `${item.name || ''} ${item.amharicName || ''} ${item.category || ''}`.toLowerCase()
       const matchesQuery = !normalizedQuery || itemText.includes(normalizedQuery)
       return matchesCategory && matchesQuery
@@ -134,14 +182,14 @@ function App() {
   const adminFilteredMenu = useMemo(() => {
     const normalizedQuery = adminSearch.trim().toLowerCase()
     return orderedMenuItems.filter((item) => {
-      const matchesCategory = adminCategory === 'All categories' || item.category === adminCategory
+      const matchesCategory = adminCategory === 'All categories' || getCategoryKey(item.category) === getCategoryKey(adminCategory)
       const itemText = `${item.name || ''} ${item.amharicName || ''} ${item.category || ''}`.toLowerCase()
       const matchesQuery = !normalizedQuery || itemText.includes(normalizedQuery)
       return matchesCategory && matchesQuery
     })
   }, [adminCategory, adminSearch, orderedMenuItems])
 
-  const adminCategoryIsEmpty = adminCategory !== 'All categories' && !orderedMenuItems.some((item) => item.category === adminCategory)
+  const adminCategoryIsEmpty = adminCategory !== 'All categories' && !orderedMenuItems.some((item) => getCategoryKey(item.category) === getCategoryKey(adminCategory))
 
   const handleAddCategory = async (event) => {
     event.preventDefault()
@@ -263,14 +311,59 @@ function App() {
     }
   }
 
+  const handleCredentialChange = async (event) => {
+    event.preventDefault()
+    setCredentialMessage('')
+
+    if (newAdminPassword !== confirmAdminPassword) {
+      setCredentialMessage('New passwords do not match.')
+      return
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/admin/change-credentials`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentEmail: currentAdminEmail,
+          currentPassword: currentAdminPassword,
+          newEmail: newAdminEmail,
+          newPassword: newAdminPassword,
+        }),
+      })
+      const data = await readApiResponse(response)
+      if (!response.ok) throw new Error(data.message || 'Unable to update credentials.')
+
+      setAdminEmail(newAdminEmail)
+      setAdminPassword('')
+      setShowCredentialForm(false)
+      setCurrentAdminEmail('')
+      setCurrentAdminPassword('')
+      setNewAdminEmail('')
+      setNewAdminPassword('')
+      setConfirmAdminPassword('')
+      setLoginError(data.message || 'Credentials updated successfully. Please log in.')
+    } catch (error) {
+      setCredentialMessage(error.message || 'Unable to update credentials.')
+    }
+  }
+
   const saveMenuEdit = async () => {
     if (!editingItemValue) return
+
+    const parsedName = parseMenuItemName(formatCombinedName(editingItemValue))
+    const payload = {
+      ...editingItemValue,
+      ...parsedName,
+      name: parsedName.name,
+      amharicName: parsedName.amharicName,
+    }
 
     try {
       const response = await fetch(`${API_URL}/menu/${editingItemValue.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingItemValue),
+        body: JSON.stringify(payload),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.message || 'Unable to update item.')
@@ -391,6 +484,14 @@ function App() {
               <p className="mb-1 text-[9px] uppercase tracking-[0.08em] text-[#907b6b] sm:text-[10px]" style={{ fontFamily: '"DM Mono", monospace' }}>{filteredItems.length} dishes</p>
             </div>
 
+            <div className="mb-5 sm:mb-[26px]">
+              <label className="block text-[9.5px] uppercase tracking-[0.08em] text-[#351d17] sm:text-[10px]" style={{ fontFamily: '"DM Mono", monospace' }}>Search dishes</label>
+              <div className="mt-2 flex items-center gap-3 border border-[#d8cabb] bg-[#fffaf4] px-3 py-3 shadow-[0_6px_20px_rgba(53,29,23,0.03)]">
+                <span aria-hidden="true" className="text-[18px] text-[#b66b45] sm:text-[20px]">⌕</span>
+                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by dish or category" className="w-full border-0 bg-transparent text-[13px] text-[#2e1b16] outline-none placeholder:text-[#9d8a7c]" />
+              </div>
+            </div>
+
             {/* Mobile: custom dropdown, fully styleable, no side scroll */}
             <div className="relative mt-5 sm:hidden">
               <button
@@ -457,6 +558,12 @@ function App() {
               ))}
             </nav>
 
+            {activeCategoryImage ? (
+              <section aria-label={`${activeCategory} category image`} className="relative mt-5 h-[138px] overflow-hidden sm:mt-[30px] sm:h-[190px]">
+                <img src={encodeURI(activeCategoryImage.src)} alt={activeCategoryImage.alt} className="absolute right-0 top-0 h-full w-[62%] object-cover object-center sm:w-[43%]" style={{ clipPath: 'ellipse(100% 100% at 100% 50%)' }} />
+              </section>
+            ) : null}
+
             {filteredItems.length ? (
               <div data-menu-grid className="mt-5 grid grid-cols-1 gap-x-[16px] gap-y-0 sm:mt-[30px] sm:grid-cols-2 sm:gap-x-[22px] xl:grid-cols-3">
                 {filteredItems.map((item, index) => (
@@ -481,7 +588,6 @@ function App() {
                         <h3 className="m-0 text-[clamp(17px,5vw,22px)] leading-tight tracking-[-0.03em] text-[#2e1b16]" style={{ fontFamily: '"Playfair Display", serif' }}>{item.name}</h3>
                       )}
                     </div>
-                    <button type="button" aria-label={`Add ${item.amharicName || item.name}${item.amharicName && item.name ? ` / ${item.name}` : ''}`} className="absolute bottom-[14px] right-0 flex h-7 w-7 items-center justify-center rounded-full border border-[#d2c2b4] bg-transparent text-[16px] text-[#b66b45] transition hover:bg-[#e2c7b4] sm:bottom-[21px] sm:h-[25px] sm:w-[25px] sm:text-[18px]">+</button>
                   </article>
                 ))}
               </div>
@@ -554,12 +660,51 @@ function App() {
           <footer className="mx-4 flex flex-col items-center gap-2 border-t border-[#d8cabb] py-5 text-[9px] uppercase tracking-[0.1em] text-[#907b6b] sm:mx-[clamp(24px,6vw,92px)] sm:flex-row sm:items-center sm:justify-between sm:py-[24px]" style={{ fontFamily: '"DM Mono", monospace' }}>
             <span>CANOE CAFE</span>
             <span>Made for lingering.</span>
-            <button type="button" onClick={() => { setShowAdminLogin(true); setLoginError('') }} className="border-0 bg-transparent p-0 text-[#cfc2b7] uppercase tracking-[inherit] transition-colors hover:text-[#9b897b]">Admin login</button>
+            <button type="button" onClick={() => { setShowAdminLogin(true); setShowCredentialForm(false); setLoginError(''); setCredentialMessage('') }} className="border-0 bg-transparent p-0 text-[#cfc2b7] uppercase tracking-[inherit] transition-colors hover:text-[#9b897b]">Admin login</button>
           </footer>
 
           {showAdminLogin ? (
             <div className="fixed inset-0 z-20 flex items-center justify-center bg-[#351d17]/60 p-5 sm:p-6" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowAdminLogin(false) }}>
-              <form onSubmit={handleAdminLogin} className="relative w-full max-w-[420px] bg-[#efe6d8] p-6 shadow-[0_20px_60px_rgba(42,22,17,0.24)] sm:p-[38px]">
+              {showCredentialForm ? (
+                <form onSubmit={handleCredentialChange} className="relative w-full max-w-[420px] bg-[#efe6d8] p-6 shadow-[0_20px_60px_rgba(42,22,17,0.24)] sm:p-[38px]">
+                  <button type="button" onClick={() => setShowAdminLogin(false)} aria-label="Close change credentials" className="absolute right-[14px] top-[13px] border-0 bg-transparent text-[22px] leading-none text-[#907b6b] sm:right-[18px] sm:top-[17px] sm:text-[25px]">×</button>
+                  <p className="mb-2.5 text-[9px] uppercase tracking-[0.16em] text-[#b66b45] sm:mb-[12px] sm:text-[10px]" style={{ fontFamily: '"DM Mono", monospace' }}>Canoe management</p>
+                  <h2 className="m-0 mb-5 text-[28px] text-[#2e1b16] sm:mb-[28px] sm:text-[36px]" style={{ fontFamily: '"Playfair Display", serif' }}>Change credentials</h2>
+
+                  <label className="mb-4 grid gap-1.5 sm:mb-[17px] sm:gap-2">
+                    <span className="text-[9.5px] uppercase tracking-[0.08em] text-[#351d17] sm:text-[10px]" style={{ fontFamily: '"DM Mono", monospace' }}>Current email</span>
+                    <input autoFocus type="email" value={currentAdminEmail} onChange={(event) => setCurrentAdminEmail(event.target.value)} required className="w-full border border-[#d8cabb] bg-[#f7f1e8] px-3 py-3 text-[12px] text-[#2e1b16] outline-none focus:border-[#b66b45]" />
+                  </label>
+
+                  <label className="mb-4 grid gap-1.5 sm:mb-[17px] sm:gap-2">
+                    <span className="text-[9.5px] uppercase tracking-[0.08em] text-[#351d17] sm:text-[10px]" style={{ fontFamily: '"DM Mono", monospace' }}>Current password</span>
+                    <input type="password" value={currentAdminPassword} onChange={(event) => setCurrentAdminPassword(event.target.value)} required className="w-full border border-[#d8cabb] bg-[#f7f1e8] px-3 py-3 text-[12px] text-[#2e1b16] outline-none focus:border-[#b66b45]" />
+                  </label>
+
+                  <label className="mb-4 grid gap-1.5 sm:mb-[17px] sm:gap-2">
+                    <span className="text-[9.5px] uppercase tracking-[0.08em] text-[#351d17] sm:text-[10px]" style={{ fontFamily: '"DM Mono", monospace' }}>New email</span>
+                    <input type="email" value={newAdminEmail} onChange={(event) => setNewAdminEmail(event.target.value)} required className="w-full border border-[#d8cabb] bg-[#f7f1e8] px-3 py-3 text-[12px] text-[#2e1b16] outline-none focus:border-[#b66b45]" />
+                  </label>
+
+                  <label className="mb-4 grid gap-1.5 sm:mb-[17px] sm:gap-2">
+                    <span className="text-[9.5px] uppercase tracking-[0.08em] text-[#351d17] sm:text-[10px]" style={{ fontFamily: '"DM Mono", monospace' }}>New password</span>
+                    <input type="password" value={newAdminPassword} onChange={(event) => setNewAdminPassword(event.target.value)} minLength={4} required className="w-full border border-[#d8cabb] bg-[#f7f1e8] px-3 py-3 text-[12px] text-[#2e1b16] outline-none focus:border-[#b66b45]" />
+                  </label>
+
+                  <label className="mb-4 grid gap-1.5 sm:mb-[17px] sm:gap-2">
+                    <span className="text-[9.5px] uppercase tracking-[0.08em] text-[#351d17] sm:text-[10px]" style={{ fontFamily: '"DM Mono", monospace' }}>Confirm new password</span>
+                    <input type="password" value={confirmAdminPassword} onChange={(event) => setConfirmAdminPassword(event.target.value)} minLength={4} required className="w-full border border-[#d8cabb] bg-[#f7f1e8] px-3 py-3 text-[12px] text-[#2e1b16] outline-none focus:border-[#b66b45]" />
+                  </label>
+
+                  {credentialMessage ? <p className="-mt-1 mb-4 text-[11px] text-[#a44935]" role="alert">{credentialMessage}</p> : null}
+
+                  <button type="submit" className="inline-flex w-full items-center justify-between border-0 bg-[#351d17] px-4 py-3 text-[11px] uppercase tracking-[0.08em] text-[#f7f1e8] transition hover:bg-[#241209] sm:px-[17px] sm:py-[15px]">
+                    Save credentials <span className="text-[17px] text-[#d29b71]">↗</span>
+                  </button>
+                  <button type="button" onClick={() => { setShowCredentialForm(false); setCredentialMessage('') }} className="mt-3 w-full border-0 bg-transparent py-2 text-[10px] uppercase tracking-[0.08em] text-[#907b6b]">Back to login</button>
+                </form>
+              ) : (
+                <form onSubmit={handleAdminLogin} className="relative w-full max-w-[420px] bg-[#efe6d8] p-6 shadow-[0_20px_60px_rgba(42,22,17,0.24)] sm:p-[38px]">
                 <button type="button" onClick={() => setShowAdminLogin(false)} aria-label="Close admin login" className="absolute right-[14px] top-[13px] border-0 bg-transparent text-[22px] leading-none text-[#907b6b] sm:right-[18px] sm:top-[17px] sm:text-[25px]">×</button>
                 <p className="mb-2.5 text-[9px] uppercase tracking-[0.16em] text-[#b66b45] sm:mb-[12px] sm:text-[10px]" style={{ fontFamily: '"DM Mono", monospace' }}>Canoe management</p>
                 <h2 className="m-0 mb-5 text-[28px] text-[#2e1b16] sm:mb-[28px] sm:text-[36px]" style={{ fontFamily: '"Playfair Display", serif' }}>Admin login</h2>
@@ -579,7 +724,9 @@ function App() {
                 <button type="submit" className="inline-flex w-full items-center justify-between border-0 bg-[#351d17] px-4 py-3 text-[11px] uppercase tracking-[0.08em] text-[#f7f1e8] transition hover:bg-[#241209] sm:px-[17px] sm:py-[15px]">
                   Login <span className="text-[17px] text-[#d29b71]">↗</span>
                 </button>
+                <button type="button" onClick={() => { setShowCredentialForm(true); setCredentialMessage('') }} className="mt-4 w-full border-0 bg-transparent py-2 text-[10px] uppercase tracking-[0.08em] text-[#907b6b]">Change email or password</button>
               </form>
+              )}
             </div>
           ) : null}
         </>
@@ -769,7 +916,10 @@ function App() {
                             <>
                               <td className="border-b border-[#d8cabb] p-3">
                                 <div className="space-y-2">
-                                  <input value={formatCombinedName(editingItemValue)} onChange={(event) => setEditingItemValue((current) => ({ ...current, name: event.target.value, amharicName: '' }))} className="w-full border border-[#d8cabb] bg-[#f7efe6] px-2 py-2 text-[12px] text-[#2e1b16] outline-none focus:border-[#b66b45]" placeholder="Name (English / Amharic)" />
+                                  <input value={formatCombinedName(editingItemValue)} onChange={(event) => {
+                                    const parsed = parseMenuItemName(event.target.value)
+                                    setEditingItemValue((current) => ({ ...current, ...parsed }))
+                                  }} className="w-full border border-[#d8cabb] bg-[#f7efe6] px-2 py-2 text-[12px] text-[#2e1b16] outline-none focus:border-[#b66b45]" placeholder="Name (English / Amharic)" />
                                 </div>
                               </td>
                               <td className="border-b border-[#d8cabb] p-3">
@@ -845,7 +995,10 @@ function App() {
                     <div key={item.id} className="border border-[#d8cabb] bg-[#f7efe6] p-3">
                       {isEditing ? (
                         <div className="space-y-2">
-                          <input value={formatCombinedName(editingItemValue)} onChange={(event) => setEditingItemValue((current) => ({ ...current, name: event.target.value, amharicName: '' }))} className="w-full border border-[#d8cabb] bg-[#f7f1e8] px-2 py-2 text-[12px] text-[#2e1b16] outline-none focus:border-[#b66b45]" placeholder="Name (English / Amharic)" />
+                          <input value={formatCombinedName(editingItemValue)} onChange={(event) => {
+                            const parsed = parseMenuItemName(event.target.value)
+                            setEditingItemValue((current) => ({ ...current, ...parsed }))
+                          }} className="w-full border border-[#d8cabb] bg-[#f7f1e8] px-2 py-2 text-[12px] text-[#2e1b16] outline-none focus:border-[#b66b45]" placeholder="Name (English / Amharic)" />
                           <select value={editingItemValue?.category || ''} onChange={(event) => setEditingItemValue((current) => ({ ...current, category: event.target.value }))} className="w-full border border-[#d8cabb] bg-[#f7f1e8] px-2 py-2 text-[12px] text-[#2e1b16] outline-none focus:border-[#b66b45]">
                             {categoryOptions.map((category) => <option key={category} value={category}>{category}</option>)}
                           </select>

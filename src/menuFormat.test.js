@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { splitDisplayName, normalizeCategoryName } from './menuFormat.js'
+import { splitDisplayName, normalizeCategoryName, parseMenuItemName } from './menuFormat.js'
 
 test('splitDisplayName separates Amharic and English names', () => {
   assert.deepEqual(splitDisplayName('እንቁላል ሳንዱች / Egg Sandwich'), {
@@ -19,8 +19,20 @@ test('splitDisplayName separates Amharic and English names', () => {
   })
 })
 
-test('normalizeCategoryName keeps a clean English category name', () => {
-  assert.equal(normalizeCategoryName('ቁርስ Breakfast'), 'Breakfast')
-  assert.equal(normalizeCategoryName('የጾም ምግቦች / Fasting Foods'), 'Fasting Foods')
+test('parseMenuItemName keeps English and Amharic fields separately', () => {
+  assert.deepEqual(parseMenuItemName('እንቁላል ሳንዱች / Egg Sandwich'), {
+    amharicName: 'እንቁላል ሳንዱች',
+    name: 'Egg Sandwich',
+  })
+
+  assert.deepEqual(parseMenuItemName('Soup'), {
+    amharicName: '',
+    name: 'Soup',
+  })
+})
+
+test('normalizeCategoryName preserves bilingual category labels for display', () => {
+  assert.equal(normalizeCategoryName('ቁርስ / Breakfast'), 'ቁርስ / Breakfast')
+  assert.equal(normalizeCategoryName('የጾም ምግቦች / Fasting Foods'), 'የጾም ምግቦች / Fasting Foods')
   assert.equal(normalizeCategoryName('Burger'), 'Burger')
 })
