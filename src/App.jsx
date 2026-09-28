@@ -84,6 +84,8 @@ function CommentsTable({ comments, removeComment }) {
 function App() {
   const [categories, setCategories] = useState([])
   const [menuItems, setMenuItems] = useState([])
+  const [menuLoading, setMenuLoading] = useState(true)
+  const [menuLoadError, setMenuLoadError] = useState('')
   const [comments, setComments] = useState([])
   const [query, setQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('All dishes')
@@ -147,6 +149,8 @@ function App() {
   }
 
 const refreshData = async () => {
+  setMenuLoading(true)
+  setMenuLoadError('')
   try {
     const [menuRes, commentsRes] = await Promise.all([
       fetch(`${API_URL}/menu`),
@@ -177,6 +181,9 @@ const refreshData = async () => {
     }
   } catch (error) {
     console.error('Failed to load data', error)
+    setMenuLoadError('Unable to load dishes. Please try again.')
+  } finally {
+    setMenuLoading(false)
   }
 }
 
@@ -591,7 +598,16 @@ const refreshData = async () => {
               </section>
             ) : null}
 
-            {filteredItems.length ? (
+            {menuLoading ? (
+              <div className="py-[48px] text-center sm:py-[80px]" role="status" aria-live="polite">
+                <p className="m-0 text-[12px] text-[#88766b]">Loading dishes...</p>
+              </div>
+            ) : menuLoadError ? (
+              <div className="py-[48px] text-center sm:py-[80px]" role="alert">
+                <p className="m-0 text-[12px] text-[#88766b]">{menuLoadError}</p>
+                <button type="button" onClick={refreshData} className="mt-3 border-0 bg-[#351d17] px-4 py-3 text-[11px] uppercase tracking-[0.08em] text-white transition hover:bg-[#241209]">Try again</button>
+              </div>
+            ) : filteredItems.length ? (
               <div data-menu-grid className="mt-5 grid grid-cols-1 gap-x-[16px] gap-y-0 sm:mt-[30px] sm:grid-cols-2 sm:gap-x-[22px] xl:grid-cols-3">
                 {filteredItems.map((item, index) => (
                   <article
