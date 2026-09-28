@@ -1,7 +1,10 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import { getCategoryKey, normalizeCategoryName, parseMenuItemName, splitDisplayName } from './menuFormat'
 
-const API_URL = (import.meta.env.VITE_API_URL || 'https://canoe-backend.onrender.com/api').replace(/\/$/, '')
+const DEFAULT_API_URL = import.meta.env.DEV
+  ? 'http://localhost:4000/api'
+  : 'https://canoe-backend.onrender.com/api'
+const API_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/$/, '')
 
 const readApiResponse = async (response) => {
   const body = await response.text()
