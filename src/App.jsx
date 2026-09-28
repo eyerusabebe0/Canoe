@@ -127,31 +127,39 @@ function App() {
     return amharicName || englishName
   }
 
-  const refreshData = async () => {
+const refreshData = async () => {
+  try {
+    const [menuRes, commentsRes] = await Promise.all([
+      fetch(`${API_URL}/menu`),
+      fetch(`${API_URL}/comments`),
+    ])
+
+    if (!menuRes.ok) throw new Error(`Menu request failed (${menuRes.status})`)
+    const menuData = await menuRes.json()
+
+    const rawMenu = Array.isArray(menuData) ? menuData : (menuData.menu || [])
+    const rawCategories = Array.isArray(menuData) ? [] : (menuData.categories || [])
+
+    setCategories(rawCategories.map((category) => normalizeCategoryName(typeof category === 'object' ? category.name : category)))
+
+    setMenuItems(rawMenu.map((item) => ({
+      ...item,
+      category: normalizeCategoryName(item.category),
+      name: splitDisplayName(item.name || item.amharicName || '').name || item.name || item.amharicName || '',
+      amharicName: splitDisplayName(item.name || item.amharicName || '').amharicName || item.amharicName || '',
+    })))
+
+    // Comments are loaded separately so a failure here never blocks the menu
     try {
-      const [categoriesRes, menuRes, commentsRes] = await Promise.all([
-        fetch(`${API_URL}/categories`),
-        fetch(`${API_URL}/menu`),
-        fetch(`${API_URL}/comments`),
-      ])
-
-      const categoriesData = await categoriesRes.json()
-      const menuData = await menuRes.json()
       const commentsData = await commentsRes.json()
-
-      setCategories((categoriesData.categories || []).map((category) => normalizeCategoryName(category)))
-      setMenuItems((menuData.menu || []).map((item) => ({
-        ...item,
-        category: normalizeCategoryName(item.category),
-        name: splitDisplayName(item.name || item.amharicName || '').name || item.name || item.amharicName || '',
-        amharicName: splitDisplayName(item.name || item.amharicName || '').amharicName || item.amharicName || '',
-      })))
-      setComments(commentsData.comments || [])
-      if (!menuData.menu?.length) setActiveCategory('All dishes')
-    } catch (error) {
-      console.error('Failed to load data', error)
+      setComments(Array.isArray(commentsData) ? commentsData : (commentsData.comments || []))
+    } catch (commentsError) {
+      console.error('Failed to load comments', commentsError)
     }
+  } catch (error) {
+    console.error('Failed to load data', error)
   }
+}
 
   useEffect(() => {
     refreshData()
