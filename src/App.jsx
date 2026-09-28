@@ -115,7 +115,23 @@ function App() {
   const [adminSearch, setAdminSearch] = useState('')
   const [adminCategory, setAdminCategory] = useState('All categories')
 
-  const categoryOptions = useMemo(() => (Array.isArray(categories) ? categories.filter((category) => category !== 'All dishes') : []), [categories])
+  const categoryOptions = useMemo(() => {
+    const availableCategories = [
+      ...(Array.isArray(categories) ? categories : []),
+      ...menuItems.map((item) => item.category),
+    ]
+    const uniqueCategories = new Map()
+
+    availableCategories.forEach((rawCategory) => {
+      const category = normalizeCategoryName(rawCategory)
+      const categoryKey = getCategoryKey(category)
+      if (category && categoryKey.toLowerCase() !== 'all dishes' && !uniqueCategories.has(categoryKey)) {
+        uniqueCategories.set(categoryKey, category)
+      }
+    })
+
+    return [...uniqueCategories.values()]
+  }, [categories, menuItems])
   const activeCategoryImage = CATEGORY_IMAGES[getCategoryKey(activeCategory)]
 
   const formatCombinedName = (item = {}) => {
