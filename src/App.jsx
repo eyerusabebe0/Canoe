@@ -1,10 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import { getCategoryKey, normalizeCategoryName, parseMenuItemName, splitDisplayName } from './menuFormat'
 
-const DEFAULT_API_URL = import.meta.env.DEV
-  ? 'http://localhost:4000/api'
-  : 'https://canoe-backend.onrender.com/api'
-const API_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/$/, '')
+const API_URL = (import.meta.env.VITE_API_URL || 'https://canoe-backend.onrender.com/api').replace(/\/$/, '')
 
 const readApiResponse = async (response) => {
   const body = await response.text()
@@ -84,8 +81,6 @@ function CommentsTable({ comments, removeComment }) {
 function App() {
   const [categories, setCategories] = useState([])
   const [menuItems, setMenuItems] = useState([])
-  const [menuLoading, setMenuLoading] = useState(true)
-  const [menuLoadError, setMenuLoadError] = useState('')
   const [comments, setComments] = useState([])
   const [query, setQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('All dishes')
@@ -120,23 +115,7 @@ function App() {
   const [adminSearch, setAdminSearch] = useState('')
   const [adminCategory, setAdminCategory] = useState('All categories')
 
-  const categoryOptions = useMemo(() => {
-    const availableCategories = [
-      ...(Array.isArray(categories) ? categories : []),
-      ...menuItems.map((item) => item.category),
-    ]
-    const uniqueCategories = new Map()
-
-    availableCategories.forEach((rawCategory) => {
-      const category = normalizeCategoryName(rawCategory)
-      const categoryKey = getCategoryKey(category)
-      if (category && categoryKey.toLowerCase() !== 'all dishes' && !uniqueCategories.has(categoryKey)) {
-        uniqueCategories.set(categoryKey, category)
-      }
-    })
-
-    return [...uniqueCategories.values()]
-  }, [categories, menuItems])
+  const categoryOptions = useMemo(() => (Array.isArray(categories) ? categories.filter((category) => category !== 'All dishes') : []), [categories])
   const activeCategoryImage = CATEGORY_IMAGES[getCategoryKey(activeCategory)]
 
   const formatCombinedName = (item = {}) => {
@@ -148,44 +127,31 @@ function App() {
     return amharicName || englishName
   }
 
-const refreshData = async () => {
-  setMenuLoading(true)
-  setMenuLoadError('')
-  try {
-    const [menuRes, commentsRes] = await Promise.all([
-      fetch(`${API_URL}/menu`),
-      fetch(`${API_URL}/comments`),
-    ])
-
-    if (!menuRes.ok) throw new Error(`Menu request failed (${menuRes.status})`)
-    const menuData = await menuRes.json()
-
-    const rawMenu = Array.isArray(menuData) ? menuData : (menuData.menu || [])
-    const rawCategories = Array.isArray(menuData) ? [] : (menuData.categories || [])
-
-    setCategories(rawCategories.map((category) => normalizeCategoryName(typeof category === 'object' ? category.name : category)))
-
-    setMenuItems(rawMenu.map((item) => ({
-      ...item,
-      category: normalizeCategoryName(item.category),
-      name: splitDisplayName(item.name || item.amharicName || '').name || item.name || item.amharicName || '',
-      amharicName: splitDisplayName(item.name || item.amharicName || '').amharicName || item.amharicName || '',
-    })))
-
-    // Comments are loaded separately so a failure here never blocks the menu
+  const refreshData = async () => {
     try {
+      const [categoriesRes, menuRes, commentsRes] = await Promise.all([
+        fetch(`${API_URL}/categories`),
+        fetch(`${API_URL}/menu`),
+        fetch(`${API_URL}/comments`),
+      ])
+
+      const categoriesData = await categoriesRes.json()
+      const menuData = await menuRes.json()
       const commentsData = await commentsRes.json()
-      setComments(Array.isArray(commentsData) ? commentsData : (commentsData.comments || []))
-    } catch (commentsError) {
-      console.error('Failed to load comments', commentsError)
+
+      setCategories((categoriesData.categories || []).map((category) => normalizeCategoryName(category)))
+      setMenuItems((menuData.menu || []).map((item) => ({
+        ...item,
+        category: normalizeCategoryName(item.category),
+        name: splitDisplayName(item.name || item.amharicName || '').name || item.name || item.amharicName || '',
+        amharicName: splitDisplayName(item.name || item.amharicName || '').amharicName || item.amharicName || '',
+      })))
+      setComments(commentsData.comments || [])
+      if (!menuData.menu?.length) setActiveCategory('All dishes')
+    } catch (error) {
+      console.error('Failed to load data', error)
     }
-  } catch (error) {
-    console.error('Failed to load data', error)
-    setMenuLoadError('Unable to load dishes. Please try again.')
-  } finally {
-    setMenuLoading(false)
   }
-}
 
   useEffect(() => {
     refreshData()
@@ -598,16 +564,7 @@ const refreshData = async () => {
               </section>
             ) : null}
 
-            {menuLoading ? (
-              <div className="py-[48px] text-center sm:py-[80px]" role="status" aria-live="polite">
-                <p className="m-0 text-[12px] text-[#88766b]">Loading dishes...</p>
-              </div>
-            ) : menuLoadError ? (
-              <div className="py-[48px] text-center sm:py-[80px]" role="alert">
-                <p className="m-0 text-[12px] text-[#88766b]">{menuLoadError}</p>
-                <button type="button" onClick={refreshData} className="mt-3 border-0 bg-[#351d17] px-4 py-3 text-[11px] uppercase tracking-[0.08em] text-white transition hover:bg-[#241209]">Try again</button>
-              </div>
-            ) : filteredItems.length ? (
+            {filteredItems.length ? (
               <div data-menu-grid className="mt-5 grid grid-cols-1 gap-x-[16px] gap-y-0 sm:mt-[30px] sm:grid-cols-2 sm:gap-x-[22px] xl:grid-cols-3">
                 {filteredItems.map((item, index) => (
                   <article
