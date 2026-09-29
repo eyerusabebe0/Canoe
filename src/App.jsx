@@ -81,6 +81,8 @@ function CommentsTable({ comments, removeComment }) {
 function App() {
   const [categories, setCategories] = useState([])
   const [menuItems, setMenuItems] = useState([])
+  const [isMenuLoading, setIsMenuLoading] = useState(true)
+  const [menuLoadError, setMenuLoadError] = useState('')
   const [comments, setComments] = useState([])
   const [query, setQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('All dishes')
@@ -128,12 +130,17 @@ function App() {
   }
 
   const refreshData = async () => {
+    setIsMenuLoading(true)
+    setMenuLoadError('')
     try {
       const [categoriesRes, menuRes, commentsRes] = await Promise.all([
         fetch(`${API_URL}/categories`),
         fetch(`${API_URL}/menu`),
         fetch(`${API_URL}/comments`),
       ])
+      if (!categoriesRes.ok || !menuRes.ok || !commentsRes.ok) {
+        throw new Error('The menu could not be loaded. Please try again.')
+      }
 
       const categoriesData = await categoriesRes.json()
       const menuData = await menuRes.json()
@@ -150,6 +157,9 @@ function App() {
       if (!menuData.menu?.length) setActiveCategory('All dishes')
     } catch (error) {
       console.error('Failed to load data', error)
+      setMenuLoadError(error.message || 'The menu could not be loaded. Please try again.')
+    } finally {
+      setIsMenuLoading(false)
     }
   }
 
@@ -564,7 +574,14 @@ function App() {
               </section>
             ) : null}
 
-            {filteredItems.length ? (
+            {isMenuLoading ? (
+              <p role="status" className="mt-5 py-[48px] text-center text-[12px] text-[#88766b] sm:py-[80px]">Loading menu...</p>
+            ) : menuLoadError ? (
+              <div role="alert" className="py-[48px] text-center sm:py-[80px]">
+                <p className="m-0 text-[12px] text-[#88766b]">{menuLoadError}</p>
+                <button type="button" onClick={refreshData} className="mt-3 border-0 bg-[#351d17] px-4 py-3 text-[11px] uppercase tracking-[0.08em] text-white transition hover:bg-[#241209]">Retry</button>
+              </div>
+            ) : filteredItems.length ? (
               <div data-menu-grid className="mt-5 grid grid-cols-1 gap-x-[16px] gap-y-0 sm:mt-[30px] sm:grid-cols-2 sm:gap-x-[22px] xl:grid-cols-3">
                 {filteredItems.map((item, index) => (
                   <article
