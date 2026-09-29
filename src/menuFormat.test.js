@@ -36,3 +36,13 @@ test('normalizeCategoryName preserves bilingual category labels for display', ()
   assert.equal(normalizeCategoryName('የጾም ምግቦች / Fasting Foods'), 'የጾም ምግቦች / Fasting Foods')
   assert.equal(normalizeCategoryName('Burger'), 'Burger')
 })
+
+test('normalizeCategoryName corrects the legacy non-fasting Amharic label', () => {
+  assert.equal(normalizeCategoryName('የጾም ያልሆኑ ምግቦች'), 'የፍስክ ምግቦች / Non-Fasting Foods')
+  assert.equal(normalizeCategoryName('የጾም ያልሆኑ ምግቦች / Non-Fasting Foods'), 'የፍስክ ምግቦች / Non-Fasting Foods')
+})
+
+test('normalizeCategoryName corrects the legacy Snack translation', () => {
+  assert.equal(normalizeCategoryName('መክሰስ'), 'ስናክ / Snack')
+  assert.equal(normalizeCategoryName('መክሰስ / Snack'), 'ስናክ / Snack')
+})

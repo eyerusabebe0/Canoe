@@ -48,7 +48,17 @@ export function normalizeCategoryName(rawValue = '') {
   const value = String(rawValue ?? '').trim()
   if (!value) return ''
 
-  return value.replace(/\s+/g, ' ')
+  const normalized = value.replace(/\s+/g, ' ')
+  const legacyNonFastingNames = [
+    'የጾም ያልሆኑ ምግቦች',
+    'የጾም ያልሆኑ ምግቦች / Non-Fasting Foods',
+  ]
+  const legacySnackNames = ['መክሰስ', 'መክሰስ / Snack']
+
+  if (legacySnackNames.includes(normalized)) return 'ስናክ / Snack'
+  return legacyNonFastingNames.includes(normalized)
+    ? 'የፍስክ ምግቦች / Non-Fasting Foods'
+    : normalized
 }
 
 export function getCategoryKey(rawValue = '') {
